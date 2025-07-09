@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-
 	int valid_ascii(const char *str) {
 		while (*str){
 			if ((unsigned char) *str > 127)
@@ -51,5 +50,39 @@
 
 	return 0;
 	}
+	int32_t codepoint_at(char str[], int32_t byte_index) {
+		uint8_t b = (uint8_t)str[byte_index];
+		uint8_t b1 = (uint8_t)str[byte_index + 1];
+		uint8_t b2 = (uint8_t)str[byte_index + 2];
+		uint8_t b3 = (uint8_t)str[byte_index + 3];
+		
+		//one
+		if (b <= 0x7F) {
+			return b;
+		}
 
+		//two
+		if ((b & 0xE0) == 0xC0) {
+			if ((b1 & 0xC0) != 0x80) {
+				return -1;
+			}
+			return ((b & 0x1F) << 6) | (b1 & 0x3F);
+		}
+		//three
+		if ((b & 0xF0) == 0xE0) {
+			if (((b1 & 0xC0) != 0x80) || ((b2 & 0xC0) != 0x80)) {
+				return -1;
+			}
+			return ((b & 0xF) << 12) || ((b1 & 0x3F) << 6) | (b2 & 0x3F);
+		}
+		//four
+		if ((b & 0xF8) == 0xF0) {
+			if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80) {
+				return -1;
+			}
+			return ((b & 0x07) << 18) | ((b1 & 0x3F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F);
+		}
+		return -1;
+	}
+	
 
